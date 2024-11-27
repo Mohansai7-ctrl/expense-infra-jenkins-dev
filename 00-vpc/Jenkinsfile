@@ -1,0 +1,84 @@
+pipeline {
+    agent {
+        label 'AGENT-1'
+    }
+
+    options {
+        disableConcurrentBuilds()
+        timeout(time: 30, unit: 'MINUTES')
+        ansiColor('xterm')
+    }
+
+    parameters {
+        choice(name: 'ACTION', choices: ['apply', 'destroy'], description: 'Please select anyone')
+    }
+    stages {
+
+        stage("Init and Plan") {
+            steps {
+                
+                withAWS(region: 'us-east-1', credentials: 'aws-creds') {
+
+                    sh """
+                        cd 00-vpc
+                        terraform init -reconfigure
+                        terraform plan -out=tfplan
+                    """
+                }
+                
+            }
+        }
+
+        stage('Apply or Destroy') {
+
+            /* input {
+                message "Should we continue to ${params.ACTION} ?"
+                ok "Yes, we should."
+            } */
+
+            steps {
+                withAWS(region: 'us-east-1', credentials: 'aws-creds') {
+                    sh """
+                        cd 00-vpc
+                        if [ ${params.ACTION} == 'apply' ]
+                        then
+                            terraform apply --auto-approve tfplan
+                        elif [ ${params.ACTION} == 'destroy' ]
+                        then  
+                            terraform destroy --auto-approve
+                        fi
+                    """
+                }
+            }
+        }
+
+        stage("Trigger 10-sg") {
+            
+            when {
+                expression { params.ACTION == 'apply' }
+
+            }
+            steps {
+                build job: '10-sg', parameters: [string(name: 'ACTION', value: 'apply')], wait: false
+
+            }
+            
+        }
+
+        
+    }
+
+    post {
+        always {
+            echo "This prints always irrespective of above stages successful or failed"
+            deleteDir()
+        }
+        success {
+            echo "This section is printed because all stages are successful"
+        }
+
+        failure {
+            echo "This section is printed because all stages are failed"
+        }
+    }
+}

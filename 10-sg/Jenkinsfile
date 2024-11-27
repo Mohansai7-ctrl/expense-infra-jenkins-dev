@@ -1,0 +1,143 @@
+pipeline {
+    agent {
+        label 'AGENT-1'
+
+    }
+
+    options {
+        disableConcurrentBuilds()
+        timeout(time: 30, unit: 'MINUTES')
+        ansiColor('xterm')
+    }
+
+    parameters {
+        choice(name: 'ACTION', choices: ['apply', 'destroy'], description: 'Please select any one option')
+    }
+
+    stages {
+
+        stage("Init and Plan") {
+            steps {
+                withAWS(region: 'us-east-1', credentials: 'aws-creds') {
+                    sh """
+                    cd 10-sg
+                    terraform init -reconfigure
+                    terraform plan -out=tfplan
+                    """
+                }
+
+            }
+            
+        }
+
+        stage("Apply or Destroy") {
+            steps {
+                withAWS(region: 'us-east-1', credentials: 'aws-creds') {
+                    sh """
+                        cd 10-sg
+                        if [ ${params.ACTION} == 'apply' ]
+                        then
+                            terraform apply --auto-approve tfplan
+                        elif [ ${params.ACTION} == 'destroy ]
+                        then
+                            terraform destroy --auto-approve
+                        fi
+                    """
+                }
+
+            }
+        }
+
+        stage("Trigger Destroy 00-vpc") {
+            when {
+                    expression { params.ACTION == 'destroy'}
+                }
+            steps {
+                build job: '00-vpc', parameters: [string(name: 'ACTION', value: 'destroy')], wait: false
+                
+            }
+        }
+
+        // Now parallely trigger creation or apply of bastion, sg, eks, ecr
+        stage("Parallel") {
+
+            when {
+                expression { params.ACTION == 'apply'}
+            }
+
+            parallel {
+
+                stage ("20-bastion") {
+                    steps {
+                        build job: '20-bastion', parameters: [string(name: 'ACTION', value: 'apply')], wait: false
+                    }
+                }
+                stage ("30-rds") {
+                    steps {
+                        build job: '30-rds', parameters: [string(name: 'ACTION', value: 'apply')], wait: false
+                    }
+                }
+                stage ("40-eks") {
+                    steps {
+                        build job: '40-eks', parameters: [string(name: 'ACTION', value: 'apply')], wait: false
+                    }
+                }
+                stage ("70-ecr") {
+                    steps {
+                        build job: '70-ecr', parameters: [string(name: 'ACTION', value: 'apply')], wait: false
+                    }
+                }
+            }
+
+            
+        }
+
+        stage ("Sequential") {
+
+            when {
+                expression { params.ACTION == 'apply' }
+            }
+
+            stages {
+                stage ("50-acm") {
+                    steps {
+                        build job: '50-acm', parameters: [string(name: 'ACTION', value: 'apply')], wait: false
+
+                    }
+                }
+                stage ("60-alb") {
+                    steps {
+                        build job: '60-alb', parameters: [string(name: 'ACTION', value: 'apply')], wait: false
+                    }
+                
+                }
+                stage ("80-ecr") {
+                    steps {
+                        build job: '80-ecr', parameters: [string(name: 'ACTION', value: 'apply')], wait: false
+                    }
+                }
+                
+            }
+            
+
+        }
+        
+        
+    }
+
+    post {
+        always {
+            echo "This section is printed always irrespective to above stages are successful or failed"
+            deleteDir()
+        }
+        success {
+            echo "This section is printed when above stages are successful"
+        }
+        failure {
+            echo "This section is printed when above stages are failed"
+        }
+    }
+
+    
+
+}

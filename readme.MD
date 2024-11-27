@@ -118,3 +118,35 @@ eks-pod-identity-agent-cj98g                    1/1     Running   0          5m1
 kube-proxy-7sgw7                                1/1     Running   0          6m4s
 kube-proxy-8zb7z                                1/1     Running   0          6m5s
 ```
+
+# In this we used VM Permanent Jenkins Agents.
+```
+Limitation with VM Agents are we need to maintain different agents for different projects (ex: nodejs, java, python - all these to be maintained with different agents)
+
+This can be avoided if we use Ephemeral Temporary Jenkins agents like docker containers or kubernetes pods.
+Ex: Agent for Kuberneted Pod
+agent{
+            kubernetes {
+                cloud kubernetesConfig.get(springBootMap.get("uat", "") ? "uat" : "prod").cloud
+                label podLabel
+            yaml """
+spec:
+    containers:
+    - name: jnlp
+      image: sivakmr469/jenkins-maven-pcf:7.0.2
+      imagePullPolicy: Always
+      resources:
+        requests:
+            cpu: 0.5
+            memory: 1Gi
+        limits:
+            cpu: 0.5
+            memory: 1.5Gi
+      ttyEnabled: true
+      workingDir: /var/lib/jenkins
+      alwaysPullImage: true
+
+"""
+            }
+        }
+```

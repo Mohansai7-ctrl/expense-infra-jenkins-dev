@@ -17,8 +17,9 @@ We are using bastion as our EKS client, so it will have
 * Since we are using RDS instead of MySQL image, we need to configure RDS manually, we are creating schema as part of RDS but table and user should be created.
 * Make sure MySQL instance allows port no 3306 from bastion
 
+below we need to give rds dns name after it got created from 30-rds
 ```
-mysql -h expense-dev.czn6yzxlcsiv.us-east-1.rds.amazonaws.com -u root -pExpenseApp1
+mysql -h <expense-dev.czn6yzxlcsiv.us-east-1.rds.amazonaws.com> -u root -pExpenseApp1
 ```
 ```
 USE transactions;
@@ -85,7 +86,7 @@ eksctl create iamserviceaccount \
 --cluster=expense-dev \
 --namespace=kube-system \
 --name=aws-load-balancer-controller \
---attach-policy-arn=arn:aws:iam::315069654700:policy/AWSLoadBalancerControllerIAMPolicy \
+--attach-policy-arn=arn:aws:iam::022499022353:policy/AWSLoadBalancerControllerIAMPolicy \
 --override-existing-serviceaccounts \
 --region us-east-1 \
 --approve

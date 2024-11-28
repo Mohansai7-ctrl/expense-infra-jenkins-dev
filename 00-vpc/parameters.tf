@@ -27,3 +27,9 @@ resource "aws_ssm_parameter" "database_subnet_ids" {
     type = "StringList"
 }
 
+resource "aws_ssm_parameter" "database_subnet_group_name" {  #resource_name == database_subnet_group_name is used in root module output name , there it as "output "database_subnet_group_name" and its value as value = aws_db_subnet_group.default.name
+    name = "/${var.project_name}/${var.environment}/database_subnet_group_name"
+    value = module.vpc.database_subnet_group_name
+    type = "String"
+}
+

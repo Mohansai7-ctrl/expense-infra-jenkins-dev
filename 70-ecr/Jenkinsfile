@@ -56,7 +56,7 @@ pipeline {
             echo "This section is printed always irrespective of above stages are successful or not"
             deleteDir()
         }
-        successful {
+        success {
             echo "This section is printed as above stages are successful"
         }
         failure {

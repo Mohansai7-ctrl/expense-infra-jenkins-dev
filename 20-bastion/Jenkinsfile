@@ -53,11 +53,11 @@ pipeline {
 
     post {
         always {
-            echo "This section is printed always irrespective of above stages are successful or not"
+            echo "This section is printed always irrespective of above stages are success or not"
             deleteDir()
         }
-        successful {
-            echo "This section is printed as above stages are successful"
+        success {
+            echo "This section is printed as above stages are success"
         }
         failure {
             echo "This section is printed as above stages are failed"

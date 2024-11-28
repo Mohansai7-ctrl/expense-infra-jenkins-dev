@@ -49,11 +49,12 @@ pipeline {
             steps {
                 withAWS(region: 'us-east-1', credentials: 'aws-creds') {
                     script {
-                        def directories = ['80-cdn', '70-acr', '60-alb', '50-acm', '40-eks', '30-rds', '20-bastion', '10-sg', '00-vpc']
+                        def directories = ['80-cdn', '70-ecr', '60-alb', '50-acm', '40-eks', '30-rds', '20-bastion', '10-sg', '00-vpc']
                         for (dir in directories) {
                             echo "Destroying the resources in directory: ${dir}"
                             sh """
                             cd ${dir}
+                            terraform init -reconfigure
                             terraform destroy --auto-approve || { echo "Destroying the directory: ${dir} is failed"; exit 1; }
                             cd ..
                             """

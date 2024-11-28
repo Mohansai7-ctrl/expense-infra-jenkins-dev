@@ -17,10 +17,10 @@ PLATFORM=$(uname -s)_$ARCH
 VALIDATE(){
    if [ $1 -ne 0 ]
    then
-        echo -e "$2...$R FAILURE $N"
+        echo -e "$2...$R is FAILURE $N"
         exit 1
     else
-        echo -e "$2...$G SUCCESS $N"
+        echo -e "$2...$G is SUCCESS $N"
     fi
 }
 
@@ -72,6 +72,5 @@ curl -sS https://webinstall.dev/k9s | bash
 VALIDATE $? "K9S installation"
 
 #mysql
-sudo dnf install mysql
-systemctl start mysql
-systemctl enable mysql
+sudo dnf install mysql -y
+VALIDATE $? "Mysql Installation "

@@ -99,7 +99,7 @@ resource "aws_lb_target_group" "expense" {
     interval = 5
     matcher = "200-299"
     path = "/"
-    port = 80
+    port = 8080   # As running as non root user (non root privilege user), we need to open the port 8080 instead of 80
     protocol = "HTTP"
     timeout = 4
   }

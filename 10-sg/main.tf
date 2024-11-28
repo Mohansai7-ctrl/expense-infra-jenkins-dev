@@ -1,7 +1,7 @@
 #Root module is terraform-aws-security-group
 
 module "mysql_sg" {
-    source = "../../terraform-aws-security-group"
+    source = "git::https://github.com/Mohansai7-ctrl/terraform-aws-security-group.git?ref=main"
     project_name = var.project_name
     environment = var.environment
     sg_name = "mysql"
@@ -136,10 +136,20 @@ resource "aws_security_group_rule" "node_eks_control_plane" {
 
 resource "aws_security_group_rule" "mysql_bastion" {
     type = "ingress"
-    from_port = 22
-    to_port = 22
+    from_port = 3306
+    to_port = 3306
     protocol = "tcp"
     source_security_group_id = module.bastion_sg.id
+    security_group_id = module.mysql_sg.id
+}
+
+#Also we need to open 3306 port on mysql to connect from node:
+resource "aws_security_group_rule" "mysql_node" {
+    type = "ingress"
+    from_port = 3306
+    to_port = 3306
+    protocol = "tcp"
+    source_security_group_id = module.node_sg.id
     security_group_id = module.mysql_sg.id
 }
 

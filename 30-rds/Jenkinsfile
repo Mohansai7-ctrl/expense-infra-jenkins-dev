@@ -17,7 +17,7 @@ pipeline {
     stages {
         stage('Init and Plan') {
             steps {
-                withAWS(region: 'us-east-1', credentials: 'aws-auth') {
+                withAWS(region: 'us-east-1', credentials: 'aws-creds') {
                     sh """
                     cd 30-rds
                     terraform init -reconfigure
@@ -35,7 +35,7 @@ pipeline {
             } */
 
             steps {
-                withAWS(region: 'us-east-1', credentials: 'aws-auth') {
+                withAWS(region: 'us-east-1', credentials: 'aws-creds') {
                     sh """
                     cd 30-rds
                     if [ ${params.ACTION} == 'apply ]

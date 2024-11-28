@@ -50,7 +50,7 @@ pipeline {
 
         stage("Trigger Destroy 00-vpc") {
             when {
-                    expression { params.ACTION == 'destroy'}
+                expression { params.ACTION == 'destroy'}
                 }
             steps {
                 build job: '00-vpc', parameters: [string(name: 'ACTION', value: 'destroy')], wait: false
@@ -111,9 +111,9 @@ pipeline {
                     }
                 
                 }
-                stage ("80-ecr") {
+                stage ("80-cdn") {
                     steps {
-                        build job: '80-ecr', parameters: [string(name: 'ACTION', value: 'apply')], wait: false
+                        build job: '80-cdn', parameters: [string(name: 'ACTION', value: 'apply')], wait: false
                     }
                 }
                 

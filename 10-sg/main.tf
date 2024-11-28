@@ -132,6 +132,8 @@ resource "aws_security_group_rule" "node_eks_control_plane" {
     security_group_id = module.node_sg.id
 }
 
+# Here as we are using RDS instead of Mysql, we need to open the port 3306 instead of opening server port 22
+
 resource "aws_security_group_rule" "mysql_bastion" {
     type = "ingress"
     from_port = 22

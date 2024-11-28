@@ -11,7 +11,7 @@ pipeline {
     }
 
     parameters {
-        choice(name: 'ACTION', choices: ['apply', 'delete'], description: 'Select any one of the option')
+        choice(name: 'ACTION', choices: ['apply', 'destroy'], description: 'Select any one of the option')
     }
 
     stages {

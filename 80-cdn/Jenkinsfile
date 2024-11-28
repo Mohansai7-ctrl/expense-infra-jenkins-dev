@@ -44,7 +44,7 @@ pipeline {
 
         stage ("Destroy") {
             when {
-                expression { params.ACTION == 'destroy'}
+                expression { params.ACTION == 'destroy' }
             }
             steps {
                 withAWS(region: 'us-east-1', credentials: 'aws-creds') {
